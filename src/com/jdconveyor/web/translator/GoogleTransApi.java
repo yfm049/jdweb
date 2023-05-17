@@ -4,10 +4,14 @@ import com.jdconveyor.web.data.Language;
 import com.jdconveyor.web.data.TransResult;
 import com.jdconveyor.web.utils.Utils;
 
+import cn.hutool.core.thread.ThreadUtil;
+import cn.hutool.core.util.RandomUtil;
+import cn.hutool.core.util.StrUtil;
+import cn.hutool.http.HttpUtil;
 import cn.hutool.json.JSONUtil;
 import okhttp3.*;
 
-import java.net.URLEncoder;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -15,6 +19,10 @@ import java.util.Map;
  * Created by lenovo on 2017/2/22.
  */
 public class GoogleTransApi implements TranslatorApi{
+	
+	private static final String TransUrl="https://translate.googleapis.com/translate_a/single";
+	
+	private static int sleepTime=30000;//睡眠时间
 
     public static Map<String,Language> language=new LinkedHashMap<>();
 
@@ -28,17 +36,18 @@ public class GoogleTransApi implements TranslatorApi{
         return transApi;
     }
 
-    public String getUrl(String from,String to){
-        return "https://translate.googleapis.com/translate_a/single?client=gtx&sl="+from+"&tl="+to+"&dt=t";
-    }
-
     public TransResult getTransResult(String query, String from, String to ) {
         TransResult result=null;
         String str=null;
-        int i=0;
+        int i=1;
         while(str==null||"".equals(str)){
-            if(i==3){
-                break;
+            if(i>=5){
+                throw new RuntimeException(query+ " 多次翻译失败 终止翻译");
+            }
+            if(StrUtil.isBlank(str)) {
+            	int st=RandomUtil.randomInt(sleepTime*i,sleepTime*(i+1));
+            	System.out.println("第 "+i+" 翻译等待 "+st+" 毫秒 "+" 翻译: "+query);
+            	ThreadUtil.sleep(st);
             }
             str=toTrans(query,from,to);
             i++;
@@ -57,28 +66,25 @@ public class GoogleTransApi implements TranslatorApi{
     }
 
     public String toTrans(String query, String from, String to) {
-        try {
-            query= query.replaceAll("\n","").replaceAll("\r","");
-            if(query.endsWith(".com")){
-                return query;
-            }
-            String p=URLEncoder.encode(query,"UTF-8");
-            RequestBody body= RequestBody.create(MediaType.parse("application/x-www-form-urlencoded"),"q="+ p);
-            Request request = new Request.Builder()
-                    .url(getUrl(from,to))
-                    .post(body)
-                    .build();
-            Response response=client.newCall(request).execute();
-            if(response.isSuccessful()){
-                String html=response.body().string();
-                response.body().close();
-                return JSONUtil.parseArray(html).getByPath("[0][0][0]",String.class);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
+    	query= query.replaceAll("\n","").replaceAll("\r","");
+        if(query.endsWith(".com")){
+            return query;
         }
-        return "";
+        try {
+        	
+	        Map<String, Object> paramMap=new HashMap<String, Object>();
+	        paramMap.put("client", "gtx");
+	        paramMap.put("sl", from);
+	        paramMap.put("tl", to);
+	        paramMap.put("dt", "t");
+	        paramMap.put("q", query);
+	        String transRs=HttpUtil.post(TransUrl, paramMap);
+	        System.out.println(query+" 翻译结果："+transRs);
+	        return JSONUtil.parseArray(transRs).getByPath("[0][0][0]",String.class);
+        }catch (Exception e) {
+        	System.out.println(query+" 翻译失败："+e.getMessage());
+		}
+        return null;
     }
 
     static {
