@@ -4,6 +4,10 @@ import com.jdconveyor.web.data.DataResult;
 import com.jdconveyor.web.data.NewsLeaveParam;
 import com.jdconveyor.web.data.NewsReq;
 import com.jdconveyor.web.utils.Utils;
+
+import cn.hutool.core.thread.ThreadUtil;
+import cn.hutool.core.util.RandomUtil;
+
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Repository;
 
@@ -175,6 +179,7 @@ public class NewsDao extends BaseDao{
                 String detaillan=Utils.toTran(detail,"auto",key);
                 String tagslan=Utils.toTran(tags,"auto",key);
                 saveNewsLanguage(news_id,newslan,deslan,detaillan,tagslan,key);
+                ThreadUtil.sleep(RandomUtil.randomInt(5000, 15000));
             }
         }
         return getAllLanList(news_id);
@@ -192,6 +197,7 @@ public class NewsDao extends BaseDao{
         return jdbcTemplate.queryForList("SELECT * FROM `news_type_language` where type_id="+newstype_id+" order by id DESC ");
     }
 
+    @Async
     public List<Map<String,Object>> transType(int type_id){
         Map<String,Object> item=jdbcTemplate.queryForMap("select * from news_type where id="+type_id);
         if(item!=null){
@@ -200,6 +206,7 @@ public class NewsDao extends BaseDao{
             for(String key:Utils.getLans().keySet()){
                 String typelan=Utils.toTran(type,"auto",key);
                 saveNewsTypeLanguage(type_id,typelan,key);
+                ThreadUtil.sleep(RandomUtil.randomInt(5000, 15000));
             }
         }
         return getAllNewLanType(type_id);
@@ -237,6 +244,7 @@ public class NewsDao extends BaseDao{
         jdbcTemplate.update("update news_language set newsname=?,des=?,detail=? where id=?",newsname,des,detail,id);
     }
 
+    @Async
     public void transField(int id,String from,String to,String lan){
         Map<String,Object> item=jdbcTemplate.queryForMap("select * from news where id="+id);
         if(item!=null){
@@ -248,6 +256,7 @@ public class NewsDao extends BaseDao{
         }
     }
 
+    @Async
     public void transFieldAll(int id,String from,String to){
         Map<String,Object> item=jdbcTemplate.queryForMap("select * from news where id="+id);
         if(item!=null){
@@ -256,6 +265,7 @@ public class NewsDao extends BaseDao{
                 String fieldlan=Utils.toTran(fieldstr,"auto",lan);
                 String sql="update news_language set "+to+"=? where news_id=? and language=?";
                 jdbcTemplate.update(sql,fieldlan,id,lan);
+                ThreadUtil.sleep(RandomUtil.randomInt(5000, 15000));
             }
 
 

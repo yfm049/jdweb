@@ -4,6 +4,10 @@ import com.jdconveyor.web.data.DataResult;
 import com.jdconveyor.web.data.NewsReq;
 import com.jdconveyor.web.data.ProductReq;
 import com.jdconveyor.web.utils.Utils;
+
+import cn.hutool.core.thread.ThreadUtil;
+import cn.hutool.core.util.RandomUtil;
+
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Repository;
 
@@ -134,6 +138,7 @@ public class ProductDao extends BaseDao{
                 String detaillan=Utils.toTran(detail,"auto",key);
                 String featureslan=Utils.toTran(features,"auto",key);
                 saveNewsLanguage(id,productlan,deslan,detaillan,featureslan,key);
+                ThreadUtil.sleep(RandomUtil.randomInt(5000, 15000));
             }
         }
         return getAllLanList(id);
@@ -150,7 +155,7 @@ public class ProductDao extends BaseDao{
     public List<Map<String,Object>> getAllProductLanType(int type_id){
         return jdbcTemplate.queryForList("SELECT * FROM `product_type_language` where type_id="+type_id);
     }
-
+    @Async
     public void transType(int type_id){
         Map<String,Object> item=jdbcTemplate.queryForMap("select * from product_type where id="+type_id);
         if(item!=null){
@@ -159,6 +164,7 @@ public class ProductDao extends BaseDao{
             for(String key:Utils.getLans().keySet()){
                 String typelan=Utils.toTran(type,"auto",key);
                 saveProductTypeLanguage(type_id,typelan,key);
+                ThreadUtil.sleep(RandomUtil.randomInt(5000, 15000));
             }
         }
     }
@@ -210,7 +216,7 @@ public class ProductDao extends BaseDao{
     public void deleteProductType(int id){
         jdbcTemplate.update("DELETE from product_type where id=?",id);
     }
-
+    @Async
     public void transField(int id,String from,String to,String lan){
         Map<String,Object> item=jdbcTemplate.queryForMap("select * from product where id="+id);
         if(item!=null){
@@ -222,6 +228,7 @@ public class ProductDao extends BaseDao{
         }
     }
 
+    @Async
     public void transFieldAll(int id,String from,String to){
         Map<String,Object> item=jdbcTemplate.queryForMap("select * from product where id="+id);
         if(item!=null){
@@ -230,6 +237,7 @@ public class ProductDao extends BaseDao{
                 String fieldlan = Utils.toTran(fieldstr, "auto", lan);
                 String sql = "update product_language set " + to + "=? where product_id=? and language=?";
                 jdbcTemplate.update(sql, fieldlan, id, lan);
+                ThreadUtil.sleep(RandomUtil.randomInt(5000, 15000));
             }
 
         }
