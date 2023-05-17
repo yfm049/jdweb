@@ -179,7 +179,6 @@ public class NewsDao extends BaseDao{
                 String detaillan=Utils.toTran(detail,"auto",key);
                 String tagslan=Utils.toTran(tags,"auto",key);
                 saveNewsLanguage(news_id,newslan,deslan,detaillan,tagslan,key);
-                ThreadUtil.sleep(RandomUtil.randomInt(5000, 15000));
             }
         }
         return getAllLanList(news_id);
@@ -206,7 +205,6 @@ public class NewsDao extends BaseDao{
             for(String key:Utils.getLans().keySet()){
                 String typelan=Utils.toTran(type,"auto",key);
                 saveNewsTypeLanguage(type_id,typelan,key);
-                ThreadUtil.sleep(RandomUtil.randomInt(5000, 15000));
             }
         }
         return getAllNewLanType(type_id);
@@ -265,7 +263,6 @@ public class NewsDao extends BaseDao{
                 String fieldlan=Utils.toTran(fieldstr,"auto",lan);
                 String sql="update news_language set "+to+"=? where news_id=? and language=?";
                 jdbcTemplate.update(sql,fieldlan,id,lan);
-                ThreadUtil.sleep(RandomUtil.randomInt(5000, 15000));
             }
 
 

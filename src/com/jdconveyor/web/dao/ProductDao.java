@@ -138,7 +138,6 @@ public class ProductDao extends BaseDao{
                 String detaillan=Utils.toTran(detail,"auto",key);
                 String featureslan=Utils.toTran(features,"auto",key);
                 saveNewsLanguage(id,productlan,deslan,detaillan,featureslan,key);
-                ThreadUtil.sleep(RandomUtil.randomInt(5000, 15000));
             }
         }
         return getAllLanList(id);
@@ -164,7 +163,6 @@ public class ProductDao extends BaseDao{
             for(String key:Utils.getLans().keySet()){
                 String typelan=Utils.toTran(type,"auto",key);
                 saveProductTypeLanguage(type_id,typelan,key);
-                ThreadUtil.sleep(RandomUtil.randomInt(5000, 15000));
             }
         }
     }
@@ -237,7 +235,6 @@ public class ProductDao extends BaseDao{
                 String fieldlan = Utils.toTran(fieldstr, "auto", lan);
                 String sql = "update product_language set " + to + "=? where product_id=? and language=?";
                 jdbcTemplate.update(sql, fieldlan, id, lan);
-                ThreadUtil.sleep(RandomUtil.randomInt(5000, 15000));
             }
 
         }
