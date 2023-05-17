@@ -96,7 +96,6 @@ public class Utils {
         if(src==null||"".equals(src)){
             return "";
         }
-        ThreadUtil.sleep(RandomUtil.randomInt(1000, 3000));
         TransUtils bdTrans=new TransUtils(src.toString(),from,to);
         bdTrans.start();
         return bdTrans.getSrc();
