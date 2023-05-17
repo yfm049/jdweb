@@ -3,13 +3,11 @@ package com.jdconveyor.web.translator;
 import com.jdconveyor.web.data.Language;
 import com.jdconveyor.web.data.TransResult;
 import com.jdconveyor.web.utils.Utils;
+
+import cn.hutool.json.JSONUtil;
 import okhttp3.*;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.select.Elements;
 
 import java.net.URLEncoder;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -31,7 +29,7 @@ public class GoogleTransApi implements TranslatorApi{
     }
 
     public String getUrl(String from,String to){
-        return "https://translate.google.cn/m?hl=zh-CN&sl="+from+"&tl="+to+"&ie=UTF-8&prev=_m";
+        return "https://translate.googleapis.com/translate_a/single?client=gtx&sl="+from+"&tl="+to+"&dt=t";
     }
 
     public TransResult getTransResult(String query, String from, String to ) {
@@ -73,12 +71,8 @@ public class GoogleTransApi implements TranslatorApi{
             Response response=client.newCall(request).execute();
             if(response.isSuccessful()){
                 String html=response.body().string();
-                Document doc=Jsoup.parse(html);
-                Elements eles=doc.getElementsByClass("t0");
-                if(eles.size()>0){
-                    String det=eles.get(0).text();
-                    return det;
-                }
+                response.body().close();
+                return JSONUtil.parseArray(html).getByPath("[0][0][0]",String.class);
             }
         } catch (Exception e) {
             e.printStackTrace();
