@@ -3,6 +3,10 @@ package com.jdconveyor.web.utils;
 import com.jdconveyor.web.data.Language;
 import com.jdconveyor.web.translator.GoogleTransApi;
 import com.jdconveyor.web.translator.TransUtils;
+
+import cn.hutool.core.thread.ThreadUtil;
+import cn.hutool.core.util.RandomUtil;
+
 import org.springframework.util.DigestUtils;
 
 import java.io.*;
@@ -87,11 +91,12 @@ public class Utils {
     }
 
 
-
-    public static String toTran(Object src,String from,String to){
+    
+    public synchronized static String toTran(Object src,String from,String to){
         if(src==null||"".equals(src)){
             return "";
         }
+        ThreadUtil.sleep(RandomUtil.randomInt(1000, 3000));
         TransUtils bdTrans=new TransUtils(src.toString(),from,to);
         bdTrans.start();
         return bdTrans.getSrc();
