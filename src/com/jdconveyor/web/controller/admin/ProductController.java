@@ -71,7 +71,7 @@ public class ProductController {
     @RequestMapping(value = {"product/lan/create/{id}"},method = RequestMethod.GET)
     public String lanCreate(@PathVariable int id,Map<String,Object> map){
         map.put("data",productDao.trans(id));
-        return "admin/product/lan/list";
+        return "redirect:/admin/product/lan/list/"+id;
     }
 
     @RequestMapping(value = {"producttype"})

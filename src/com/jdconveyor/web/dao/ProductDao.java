@@ -10,6 +10,7 @@ import cn.hutool.core.util.RandomUtil;
 
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
@@ -127,7 +128,6 @@ public class ProductDao extends BaseDao{
     public List<Map<String,Object>> trans(int id){
         Map<String,Object> item=jdbcTemplate.queryForMap("select * from product where id="+id);
         if(item!=null){
-            jdbcTemplate.execute("delete from product_language where product_id="+id);
             Object product=item.get("product");
             Object des=item.get("des");
             Object detail=item.get("detail");
@@ -143,7 +143,9 @@ public class ProductDao extends BaseDao{
         return getAllLanList(id);
     }
 
+    @Transactional
     public void saveNewsLanguage(int id,String productlan,String des,String detail,String features,String lan){
+    	jdbcTemplate.update("delete from product_language where product_id=? and language=?",id,lan);
         jdbcTemplate.update("insert into product_language(productname,des,detail,features,language,product_id) values(?,?,?,?,?,?)",productlan,des,detail,features,lan,id);
     }
 

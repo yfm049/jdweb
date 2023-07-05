@@ -5,6 +5,7 @@ import com.jdconveyor.web.data.NewsReq;
 import com.jdconveyor.web.data.TradeReq;
 import com.jdconveyor.web.utils.Utils;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
@@ -82,10 +83,8 @@ public class TradeDao extends BaseDao{
     public List<Map<String,Object>> trans(int id){
         Map<String,Object> item=jdbcTemplate.queryForMap("select * from trade where id="+id);
         if(item!=null){
-            jdbcTemplate.execute("delete from trade_language where trade_id="+id);
             Object country=item.get("country");
             Object area=item.get("area");
-
             for(String key:Utils.getLans().keySet()){
                 String countrylan=Utils.toTran(country,"zh",key);
                 String arealan=Utils.toTran(area,"zh",key);
@@ -94,8 +93,9 @@ public class TradeDao extends BaseDao{
         }
         return getAllLanList(id);
     }
-
+    @Transactional
     public void savetradeLanguage(int id,String countrylan,String arealan,String lan){
+    	jdbcTemplate.update("delete from trade_language where trade_id=? and language=?",id,lan);
         jdbcTemplate.update("insert into trade_language(country,area,language,trade_id) values(?,?,?,?)",countrylan,arealan,lan,id);
     }
 
