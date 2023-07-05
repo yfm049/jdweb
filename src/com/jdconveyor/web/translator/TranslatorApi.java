@@ -1,11 +1,11 @@
 package com.jdconveyor.web.translator;
 
-import com.jdconveyor.web.data.TransResult;
+import java.util.Map;
 
 /**
  * Created by lenovo on 2017/2/22.
  */
 public interface TranslatorApi {
 
-    public TransResult getTransResult(String query, String from, String to);
+    public Map<String, String> getTransResult(String query, String from, String to);
 }

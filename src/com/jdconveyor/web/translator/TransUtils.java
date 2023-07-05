@@ -1,6 +1,9 @@
 package com.jdconveyor.web.translator;
 
 import com.jdconveyor.web.data.TransResult;
+
+import cn.hutool.core.util.StrUtil;
+
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Node;
@@ -9,6 +12,7 @@ import org.jsoup.select.Elements;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by lenovo on 2017/2/20.
@@ -17,7 +21,6 @@ public class TransUtils {
     private String src;
     private String from;
     private String to;
-    //private TranslatorApi translatorApi=BdTransApi.getTransApi();//GoogleTransApi.getTransApi();
     private TranslatorApi translatorApi=GoogleTransApi.getTransApi();
 
     private Element body;
@@ -32,22 +35,22 @@ public class TransUtils {
     }
 
     public TransUtils start(){
+    	Map<String, String> result= translatorApi.getTransResult(src,from,to);
         body=Jsoup.parse(src).body();
-        Trans(body);
+        Trans(body,result);
         return this;
     }
 
-    private void Trans(Element parent){
+    private void Trans(Element parent,Map<String, String> result){
         List<TextNode> textnode=parent.textNodes();
         if(textnode!=null&&textnode.size()>0){
             Iterator<TextNode> iterator=textnode.iterator();
             while(iterator.hasNext()){
                 TextNode text=iterator.next();
                 if(!text.isBlank()){
-                    String own=text.text();
-                    TransResult result= translatorApi.getTransResult(own,from,to);
-                    if(result!=null&&result.isSuccess()){
-                        text.text(result.getTransResult().getDst());
+                    String dst=result.get(StrUtil.trim(text.text()));
+                    if(StrUtil.isNotBlank(dst)){
+                        text.text(dst);
                     }
                 }
             }
@@ -57,7 +60,7 @@ public class TransUtils {
             Iterator<Element> iterator=elements.iterator();
             while(iterator.hasNext()){
                 Element item=iterator.next();
-                Trans(item);
+                Trans(item,result);
             }
         }
 

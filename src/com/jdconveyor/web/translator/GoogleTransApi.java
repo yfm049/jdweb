@@ -8,7 +8,9 @@ import cn.hutool.core.thread.ThreadUtil;
 import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.http.HttpUtil;
+import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONUtil;
+import jdk.internal.org.objectweb.asm.tree.IntInsnNode;
 import okhttp3.*;
 
 import java.util.HashMap;
@@ -36,55 +38,38 @@ public class GoogleTransApi implements TranslatorApi{
         return transApi;
     }
 
-    public TransResult getTransResult(String query, String from, String to ) {
-        TransResult result=null;
-        String str=null;
-        int i=1;
-        while(str==null||"".equals(str)){
-            if(i>=5){
-                throw new RuntimeException(query+ " 多次翻译失败 终止翻译");
-            }
-            if(StrUtil.isBlank(str)) {
-            	int st=RandomUtil.randomInt(sleepTime*i,sleepTime*(i+1));
-            	System.out.println("第 "+i+" 翻译等待 "+st+" 毫秒 "+" 翻译: "+query);
-            	ThreadUtil.sleep(st);
-            }
-            str=toTrans(query,from,to);
-            i++;
-        }
-        if(!Utils.isEmpty(str)){
-            result=new TransResult();
-            result.setFrom(from);
-            result.setTo(to);
-
-            TransResult.Result tresult=new TransResult.Result();
-            tresult.setSrc(query);
-            tresult.setDst(str);
-            result.setTransResult(tresult);
-        }
-        return result;
+    public Map<String, String> getTransResult(String query, String from, String to ) {
+        return toTrans(query,from,to);
     }
 
-    public String toTrans(String query, String from, String to) {
+    public Map<String, String> toTrans(String query, String from, String to) {
+    	Map<String, String> rsMap=new LinkedHashMap<String, String>();
     	query= query.replaceAll("\n","").replaceAll("\r","");
         if(query.endsWith(".com")){
-            return query;
+        	rsMap.put(query, query);
+        	return rsMap;
         }
         try {
-        	
+        	System.out.println("翻译内容："+query);
+        	ThreadUtil.sleep(RandomUtil.randomInt(sleepTime,sleepTime*2));
 	        Map<String, Object> paramMap=new HashMap<String, Object>();
+	        paramMap.put("format", "html");
 	        paramMap.put("client", "gtx");
 	        paramMap.put("sl", from);
 	        paramMap.put("tl", to);
 	        paramMap.put("dt", "t");
 	        paramMap.put("q", query);
 	        String transRs=HttpUtil.post(TransUrl, paramMap);
-	        System.out.println(query+" 翻译结果："+transRs);
-	        return JSONUtil.parseArray(transRs).getByPath("[0][0][0]",String.class);
+	        System.out.println("翻译结果："+transRs);
+	        JSONArray root=JSONUtil.parseArray(transRs).getJSONArray(0);
+			for(int i=0;i<root.size();i++) {
+				JSONArray item=root.getJSONArray(i);
+				rsMap.put(StrUtil.trim(item.getStr(1)), item.getStr(0));
+			}
         }catch (Exception e) {
         	System.out.println(query+" 翻译失败："+e.getMessage());
 		}
-        return null;
+        return rsMap;
     }
 
     static {
@@ -194,6 +179,20 @@ public class GoogleTransApi implements TranslatorApi{
         language.put("zh-CN",new Language("zh-CN","中文(简体)","中文(简体)"));
 
     }
+    
+    
+    public static void main(String[] args) {
+    	Map<String, String> rsMap=new LinkedHashMap<String, String>();
+    	
+		String jsonString="[[[\"Because the belt core selects cotton-duck, nylon-duck or EP-duck, the belt has good elasticity,excellent troughability,and low elongation, The rubber cover, which is made from chemical resistant materials, has fine anti-chemical corrosiveness and good physical properties.\",\"Because the belt core selects cotton-duck, nylon-duck or EP-duck, the belt has good elasticity,excellent troughability,and low elongation, The rubber cover, which is made from chemical resistant materials, has fine anti-chemical corrosiveness and good physical properties.\",null,null,7],[\"類別\",\"类别\",null,null,7],[\"浸泡溶液\",\"浸泡溶液\",null,null,7],[\"濃度()\",\"浓度()\",null,null,7],[\"浸泡條件溫度x時間\",\"浸泡条件温度x时间\",null,null,7],[\"浸泡前後性能變化率\",\"浸泡前后性能变化率\",null,null,7],[\"體積膨脹率\",\"体积膨胀率\",null,null,7],[\"強度變化率\",\"强度变化率\",null,null,7],[\"A1\",\"A1\",null,null,7],[\"鹽酸(HCI)\",\"盐酸(HCI)\",null,null,7],[\"18%\",\"18%\",null,null,7],[\"50°C x 96h\",\"50°C x 96h\",null,null,7],[\"+10%以下\",\"+10%以下\",null,null,7],[\"-10%以內\",\"-10%以内\",null,null,7],[\"A2\",\"A2\",null,null,7],[\"硫酸(H2SO4)\",\"硫酸(H2SO4)\",null,null,7],[\"50%\",\"50%\",null,null,7],[\"50°C x 96h\",\"50°C x 96h\",null,null,7],[\"+10%以下\",\"+10%以下\",null,null,7],[\"-10%以內\",\"-10%以内\",null,null,7],[\"A3\",\"A3\",null,null,7],[\"氫氧化鈉(NaOH)\",\"氢氧化钠(NaOH)\",null,null,7],[\"48%\",\"48%\",null,null,7],[\"50°C x 96h\",\"50°C x 96h\",null,null,7],[\"+10%以下\",\"+10%以下\",null,null,7],[\"-10%以內\",\"-10%以内\",null,null,7]],null,\"zh-CN\",null,null,null,0.96145004,[],[[\"zh-CN\"],null,[0.96145004],[\"zh-CN\"]]]";
+		JSONArray root=JSONUtil.parseArray(jsonString).getJSONArray(0);
+		for(int i=0;i<root.size();i++) {
+			JSONArray item=root.getJSONArray(i);
+			rsMap.put(StrUtil.trim(item.getStr(1)), item.getStr(0));
+		}
+		System.out.println(JSONUtil.toJsonStr(rsMap));
+		
+	}
 
 
 }
