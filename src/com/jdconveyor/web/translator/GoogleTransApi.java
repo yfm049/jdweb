@@ -45,13 +45,11 @@ public class GoogleTransApi implements TranslatorApi{
     public Map<String, String> toTrans(String query, String from, String to) {
     	Map<String, String> rsMap=new LinkedHashMap<String, String>();
     	query= query.replaceAll("\n","").replaceAll("\r","");
+    	System.out.println("翻译内容："+query);
         if(query.endsWith(".com")){
         	rsMap.put(query, query);
-        	return rsMap;
-        }
-        try {
-        	System.out.println("翻译内容："+query);
-        	ThreadUtil.sleep(RandomUtil.randomInt(sleepTime,sleepTime*2));
+        }else {
+	    	ThreadUtil.sleep(RandomUtil.randomInt(sleepTime,sleepTime*2));
 	        Map<String, Object> paramMap=new HashMap<String, Object>();
 	        paramMap.put("format", "html");
 	        paramMap.put("client", "gtx");
@@ -60,15 +58,14 @@ public class GoogleTransApi implements TranslatorApi{
 	        paramMap.put("dt", "t");
 	        paramMap.put("q", query);
 	        String transRs=HttpUtil.post(TransUrl, paramMap);
-	        System.out.println("翻译结果："+transRs);
+	        
 	        JSONArray root=JSONUtil.parseArray(transRs).getJSONArray(0);
 			for(int i=0;i<root.size();i++) {
 				JSONArray item=root.getJSONArray(i);
 				rsMap.put(StrUtil.trim(item.getStr(1)), item.getStr(0));
 			}
-        }catch (Exception e) {
-        	System.out.println(query+" 翻译失败："+e.getMessage());
-		}
+        }
+		System.out.println("翻译结果："+JSONUtil.toJsonStr(rsMap));
         return rsMap;
     }
 
