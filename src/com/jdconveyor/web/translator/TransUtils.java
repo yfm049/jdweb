@@ -45,7 +45,7 @@ public class TransUtils {
             while(iterator.hasNext()){
                 TextNode text=iterator.next();
                 if(!text.isBlank()){
-                    String dst=result.get(StrUtil.trim(text.text()));
+                    String dst=result.get(StrUtil.replace(text.text()," ",""));
                     if(StrUtil.isNotBlank(dst)){
                         text.text(dst);
                     }

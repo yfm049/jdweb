@@ -58,11 +58,10 @@ public class GoogleTransApi implements TranslatorApi{
 	        paramMap.put("dt", "t");
 	        paramMap.put("q", query);
 	        String transRs=HttpUtil.post(TransUrl, paramMap);
-	        
 	        JSONArray root=JSONUtil.parseArray(transRs).getJSONArray(0);
 			for(int i=0;i<root.size();i++) {
 				JSONArray item=root.getJSONArray(i);
-				rsMap.put(StrUtil.trim(item.getStr(1)), item.getStr(0));
+				rsMap.put(StrUtil.replace(item.getStr(1)," ",""), item.getStr(0));
 			}
         }
 		System.out.println("翻译结果："+JSONUtil.toJsonStr(rsMap));
@@ -188,7 +187,12 @@ public class GoogleTransApi implements TranslatorApi{
 			rsMap.put(StrUtil.trim(item.getStr(1)), item.getStr(0));
 		}
 		System.out.println(JSONUtil.toJsonStr(rsMap));
+		System.out.println(StrUtil.replace("a  ba D"," ","_"));
 		
+		System.out.println(StrUtil.trim(" a ba D ",0));
+		System.out.println(" a ba D ".replaceAll(" ", ""));
+		
+		System.out.println(StrUtil.replace(" a ba D "," ",""));
 	}
 
 

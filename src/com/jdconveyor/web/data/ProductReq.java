@@ -3,6 +3,8 @@ package com.jdconveyor.web.data;
 
 import com.jdconveyor.web.utils.Utils;
 
+import cn.hutool.core.util.StrUtil;
+
 /**
  * Created by lenovo on 2016/12/22.
  */
@@ -26,7 +28,7 @@ public class ProductReq {
     }
 
     public String getProduct_url() {
-        return product_url;
+        return StrUtil.replace(product_url, " ", "_");
     }
 
     public void setProduct_url(String product_url) {
