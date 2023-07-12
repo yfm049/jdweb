@@ -67,6 +67,7 @@ public class ProductDao extends BaseDao{
         if(!Utils.isEmpty(lan)){
             sql+=" and a.language='"+lan+"' ";
         }
+        sql+=" order by type_id";
         return jdbcTemplate.queryForList(sql);
     }
     public List<Map<String,Object>> allProduct(){
